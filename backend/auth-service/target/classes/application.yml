@@ -1,0 +1,35 @@
+server:
+    port: 8081
+
+spring:
+    application:
+        name: auth-service
+
+    datasource:
+        url: ${DB_URL:jdbc:mysql://localhost:3306/auth_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC}
+        username: ${DB_USER:root}
+        password: ${DB_PASSWORD:root@9966}
+
+    jpa:
+        hibernate:
+            ddl-auto: update
+        open-in-view: false
+
+springdoc:
+    swagger-ui:
+        enabled: false
+    api-docs:
+        enabled: true
+
+jwt:
+    secret: ${JWT_SECRET:expirymate-demo-secret-key-must-be-at-least-32-bytes}
+
+notification-service:
+    url: ${NOTIFICATION_SERVICE_URL:http://NOTIFICATION-SERVICE}
+
+eureka:
+    client:
+        service-url:
+            defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    instance:
+        prefer-ip-address: true

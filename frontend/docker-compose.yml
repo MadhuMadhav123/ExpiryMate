@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    container_name: expirymate-frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped

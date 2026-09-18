@@ -1,0 +1,137 @@
+services:
+    mysql:
+        image: mysql:8.4
+        container_name: expirymate-mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
+        ports:
+            - "3307:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./infra/mysql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent",
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 30
+            start_period: 15s
+        restart: unless-stopped
+
+    mailpit:
+        image: axllent/mailpit:latest
+        container_name: expirymate-mailpit
+        ports:
+            - "1025:1025"
+            - "8025:8025"
+        restart: unless-stopped
+
+    eureka-server:
+        build:
+            context: ./eureka-server
+        container_name: expirymate-eureka
+        ports:
+            - "8761:8761"
+        restart: unless-stopped
+
+    notification-service:
+        build:
+            context: ./notification-service
+        container_name: expirymate-notification
+        environment:
+            DB_URL: jdbc:mysql://mysql:3306/notification_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+            DB_USER: root
+            DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
+            DOCUMENT_SERVICE_URL: http://DOCUMENT-SERVICE
+            EUREKA_URL: http://eureka-server:8761/eureka/
+            MAIL_HOST: ${MAIL_HOST:-mailpit}
+            MAIL_PORT: ${MAIL_PORT:-1025}
+            MAIL_USERNAME: ${MAIL_USERNAME:-}
+            MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+            MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+            MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
+            MAIL_FROM: ${MAIL_FROM:-reminders@expirymate.local}
+            REMINDER_SCAN_DELAY_MS: ${REMINDER_SCAN_DELAY_MS:-60000}
+        depends_on:
+            mysql:
+                condition: service_healthy
+            eureka-server:
+                condition: service_started
+            mailpit:
+                condition: service_started
+        ports:
+            - "8083:8083"
+        restart: unless-stopped
+
+    auth-service:
+        build:
+            context: ./auth-service
+        container_name: expirymate-auth
+        environment:
+            DB_URL: jdbc:mysql://mysql:3306/auth_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+            DB_USER: root
+            DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
+            JWT_SECRET: ${JWT_SECRET:-expirymate-demo-secret-key-must-be-at-least-32-bytes}
+            EUREKA_URL: http://eureka-server:8761/eureka/
+            NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
+        depends_on:
+            mysql:
+                condition: service_healthy
+            eureka-server:
+                condition: service_started
+            notification-service:
+                condition: service_started
+        ports:
+            - "8081:8081"
+        restart: unless-stopped
+
+    document-service:
+        build:
+            context: ./document-service
+        container_name: expirymate-document
+        environment:
+            DB_URL: jdbc:mysql://mysql:3306/document_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+            DB_USER: root
+            DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
+            JWT_SECRET: ${JWT_SECRET:-expirymate-demo-secret-key-must-be-at-least-32-bytes}
+            EUREKA_URL: http://eureka-server:8761/eureka/
+            NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
+            DOCUMENT_STORAGE_PATH: /data/documents
+        volumes:
+            - document_files:/data/documents
+        depends_on:
+            mysql:
+                condition: service_healthy
+            eureka-server:
+                condition: service_started
+            notification-service:
+                condition: service_started
+        ports:
+            - "8082:8082"
+        restart: unless-stopped
+
+    api-gateway:
+        build:
+            context: ./api-gateway
+        container_name: expirymate-gateway
+        environment:
+            EUREKA_URL: http://eureka-server:8761/eureka/
+        depends_on:
+            eureka-server:
+                condition: service_started
+            auth-service:
+                condition: service_started
+            document-service:
+                condition: service_started
+            notification-service:
+                condition: service_started
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+
+volumes:
+    mysql_data:
+    document_files:
