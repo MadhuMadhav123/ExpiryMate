@@ -3,6 +3,8 @@ package com.expirymate.auth.controller;
 import com.expirymate.auth.dto.AuthDtos.AuthResponse;
 import com.expirymate.auth.dto.AuthDtos.LoginRequest;
 import com.expirymate.auth.dto.AuthDtos.RegisterRequest;
+import com.expirymate.auth.event.UserRegisteredEvent;
+import com.expirymate.auth.messaging.UserEventPublisher;
 import com.expirymate.auth.model.User;
 import com.expirymate.auth.repo.UserRepository;
 import com.expirymate.auth.security.JwtService;
@@ -58,7 +60,7 @@ public class AuthController {
 		user.setPassword(passwordEncoder.encode(request.password()));
 		user = userRepository.save(user);
 
-		notificationClient.sendWelcomeEmail(user.getName(), user.getEmail());
+		notificationClient.sendWelcomeEmail(user);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(toAuthResponse(user));
 	}

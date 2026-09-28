@@ -30,17 +30,17 @@ public class InternalNotificationController {
 						.body(Map.of("message", "Email server unavailable; check notification logs"));
 	}
 
-	@PostMapping("/expiry")
-	public ResponseEntity<Map<String, String>> sendExpiry(@RequestBody ExpiryEmailRequest request) {
-		ReminderService.Doc document = new ReminderService.Doc(request.id(), request.userId(), request.ownerEmail(),
-				request.name(), request.category(), request.documentNumber(), null, request.expiryDate(), null,
-				"EXPIRING");
-
-		boolean sent = reminderService.sendImmediateExpiryReminder(document);
-		return sent ? ResponseEntity.ok(Map.of("message", "Expiry reminder sent"))
-				: ResponseEntity.status(503)
-						.body(Map.of("message", "Email server unavailable; check notification logs"));
-	}
+//	@PostMapping("/expiry")
+//	public ResponseEntity<Map<String, String>> sendExpiry(@RequestBody ExpiryEmailRequest request) {
+//		ReminderService.Doc document = new ReminderService.Doc(request.id(), request.userId(), request.ownerEmail(),
+//				request.name(), request.category(), request.documentNumber(), null, request.expiryDate(), null,
+//				"EXPIRING");
+//
+//		boolean sent = reminderService.sendImmediateExpiryReminder(document);
+//		return sent ? ResponseEntity.ok(Map.of("message", "Expiry reminder sent"))
+//				: ResponseEntity.status(503)
+//						.body(Map.of("message", "Email server unavailable; check notification logs"));
+//	}
 
 	public record WelcomeEmailRequest(String name, String email) {
 	}

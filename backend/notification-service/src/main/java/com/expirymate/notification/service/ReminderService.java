@@ -83,8 +83,8 @@ public class ReminderService {
 		}
 	}
 
-	public boolean sendImmediateExpiryReminder(Doc document) {
-		return sendExpiryReminder(document, true);
+	public void sendImmediateExpiryReminder(Doc document) {
+		sendExpiryReminder(document, true);
 	}
 
 	private boolean sendExpiryReminder(Doc document, boolean force) {

@@ -1,53 +1,62 @@
 server:
-    port: 8083
+  port: 8083
 
 spring:
-    application:
-        name: notification-service
+  application:
+    name: notification-service
 
-    datasource:
-        url: ${DB_URL:jdbc:mysql://localhost:3306/notification_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC}
-        username: ${DB_USER:root}
-        password: ${DB_PASSWORD:root@9966}
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/notification_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root@9966}
 
-    jpa:
-        hibernate:
-            ddl-auto: update
-        open-in-view: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
 
-    mail:
-        host: ${MAIL_HOST:localhost}
-        port: ${MAIL_PORT:1025}
-        username: ${MAIL_USERNAME:}
-        password: ${MAIL_PASSWORD:}
-        properties:
-            mail:
-                smtp:
-                    auth: ${MAIL_SMTP_AUTH:false}
-                    starttls:
-                        enable: ${MAIL_STARTTLS:false}
-                    connectiontimeout: 5000
-                    timeout: 5000
-                    writetimeout: 5000
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 springdoc:
-    swagger-ui:
-        enabled: false
-    api-docs:
-        enabled: true
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: true
 
 document-service:
-    url: ${DOCUMENT_SERVICE_URL:http://DOCUMENT-SERVICE}
+  url: ${DOCUMENT_SERVICE_URL:http://DOCUMENT-SERVICE}
 
 app:
-    mail:
-        from: ${MAIL_FROM:reminders@expirymate.local}
-    reminders:
-        scan-delay-ms: ${REMINDER_SCAN_DELAY_MS:60000}
+  mail:
+    from: ${MAIL_FROM:reminders@expirymate.local}
+
+  reminders:
+    scan-delay-ms: ${REMINDER_SCAN_DELAY_MS:60000}
 
 eureka:
-    client:
-        service-url:
-            defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
-    instance:
-        prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+
+  instance:
+    prefer-ip-address: false
+    hostname: localhost
