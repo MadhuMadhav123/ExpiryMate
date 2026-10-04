@@ -58,6 +58,8 @@ services:
             DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
             DOCUMENT_SERVICE_URL: http://DOCUMENT-SERVICE
             EUREKA_URL: http://eureka-server:8761/eureka/
+            EUREKA_HOSTNAME: auth-service
+            EUREKA_PREFER_IP: "false"
             MAIL_HOST: ${MAIL_HOST:-mailpit}
             MAIL_PORT: ${MAIL_PORT:-1025}
             MAIL_USERNAME: ${MAIL_USERNAME:-}
@@ -96,6 +98,8 @@ services:
             DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
             JWT_SECRET: ${JWT_SECRET:-expirymate-demo-secret-key-must-be-at-least-32-bytes}
             EUREKA_URL: http://eureka-server:8761/eureka/
+            EUREKA_HOSTNAME: auth-service
+            EUREKA_PREFER_IP: "false"
             NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
 
             SPRING_RABBITMQ_HOST: rabbitmq
@@ -127,6 +131,8 @@ services:
             DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
             JWT_SECRET: ${JWT_SECRET:-expirymate-demo-secret-key-must-be-at-least-32-bytes}
             EUREKA_URL: http://eureka-server:8761/eureka/
+            EUREKA_HOSTNAME: document-service
+            EUREKA_PREFER_IP: "false"
             NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
             DOCUMENT_STORAGE_PATH: /data/documents
 

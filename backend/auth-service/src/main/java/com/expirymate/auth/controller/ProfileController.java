@@ -8,6 +8,8 @@ import com.expirymate.auth.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,74 +22,88 @@ import java.util.Map;
 @SecurityRequirement(name = "bearerAuth")
 public class ProfileController {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtService jwtService;
+    private static final Logger log = LoggerFactory.getLogger(ProfileController.class);
+    private static final String CLASS_NAME = ProfileController.class.getSimpleName();
 
-	public ProfileController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.jwtService = jwtService;
-	}
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-	@GetMapping
-	public ResponseEntity<?> profile(@RequestHeader("Authorization") String authorization) {
-		User user = authenticatedUser(authorization);
-		if (user == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
-		}
-		return ResponseEntity.ok(profileResponse(user));
-	}
+    public ProfileController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
-	@PutMapping
-	public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String authorization,
-			@Valid @RequestBody UpdateProfileRequest request) {
-		User user = authenticatedUser(authorization);
-		if (user == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
-		}
+    @GetMapping
+    public ResponseEntity<?> profile(@RequestHeader("Authorization") String authorization) {
+        log.info("{} - Get profile API triggered", CLASS_NAME);
+        User user = authenticatedUser(authorization);
+        if (user == null) {
+            log.warn("{} - Invalid token", CLASS_NAME);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
+        }
+        log.info("{} - Get profile successful for userId: {}, email: {}", CLASS_NAME, user.getId(), user.getEmail());
+        return ResponseEntity.ok(profileResponse(user));
+    }
 
-		user.setName(request.name().trim());
-		userRepository.save(user);
-		return ResponseEntity.ok(profileResponse(user));
-	}
+    @PutMapping
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String authorization,
+                                           @Valid @RequestBody UpdateProfileRequest request) {
+        log.info("{} - Update profile API triggered for name: {}", CLASS_NAME, request.name());
+        User user = authenticatedUser(authorization);
+        if (user == null) {
+            log.warn("{} - Invalid token for name: {}", CLASS_NAME, request.name());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
+        }
 
-	@PutMapping("/password")
-	public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String authorization,
-			@Valid @RequestBody ChangePasswordRequest request) {
-		User user = authenticatedUser(authorization);
-		if (user == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
-		}
+        user.setName(request.name().trim());
+        userRepository.save(user);
+        log.info("{} - Update profile successful for userId: {}, email: {}", CLASS_NAME, user.getId(), user.getEmail());
+        return ResponseEntity.ok(profileResponse(user));
+    }
 
-		if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-			return ResponseEntity.badRequest().body(Map.of("message", "Current password is incorrect"));
-		}
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String authorization,
+                                            @Valid @RequestBody ChangePasswordRequest request) {
+        log.info("{} - Update password API triggered", CLASS_NAME);
+        User user = authenticatedUser(authorization);
+        if (user == null) {
+            log.warn("{} - Update password Invalid token", CLASS_NAME);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
+        }
 
-		if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
-			return ResponseEntity.badRequest().body(Map.of("message", "New password must be different"));
-		}
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            log.warn("{} - Current password is incorrect for name: {}", CLASS_NAME, user.getName());
+            return ResponseEntity.badRequest().body(Map.of("message", "Current password is incorrect"));
+        }
 
-		user.setPassword(passwordEncoder.encode(request.newPassword()));
-		userRepository.save(user);
-		return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
-	}
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            log.warn("{} - New password must be different for name: {}", CLASS_NAME, user.getName());
+            return ResponseEntity.badRequest().body(Map.of("message", "New password must be different"));
+        }
 
-	private User authenticatedUser(String authorization) {
-		try {
-			if (authorization == null || !authorization.startsWith("Bearer ")) {
-				return null;
-			}
-			Claims claims = jwtService.parse(authorization.substring(7));
-			Long userId = ((Number) claims.get("userId")).longValue();
-			return userRepository.findById(userId).orElse(null);
-		} catch (Exception exception) {
-			return null;
-		}
-	}
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+        log.info("{} - Password changed successfully for userId: {}, email: {}", CLASS_NAME, user.getId(), user.getEmail());
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+    }
 
-	private Map<String, Object> profileResponse(User user) {
-		String token = jwtService.generate(user.getId(), user.getName(), user.getEmail());
-		return Map.of("token", token, "userId", user.getId(), "name", user.getName(), "email", user.getEmail());
-	}
+    private User authenticatedUser(String authorization) {
+        try {
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                return null;
+            }
+            Claims claims = jwtService.parse(authorization.substring(7));
+            Long userId = ((Number) claims.get("userId")).longValue();
+            return userRepository.findById(userId).orElse(null);
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private Map<String, Object> profileResponse(User user) {
+        String token = jwtService.generate(user.getId(), user.getName(), user.getEmail());
+        return Map.of("token", token, "userId", user.getId(), "name", user.getName(), "email", user.getEmail());
+    }
 }

@@ -7,6 +7,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,9 @@ import java.util.List;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+	private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
+	private static final String CLASS_NAME = JwtAuthFilter.class.getSimpleName();
+
 	private final SecretKey key;
 
 	public JwtAuthFilter(@Value("${jwt.secret}") String secret) {
@@ -30,6 +35,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+
 		String path = request.getRequestURI();
 
 		if (path.startsWith("/internal/") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
@@ -38,20 +44,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 		}
 
 		String authorization = request.getHeader("Authorization");
+
 		if (authorization != null && authorization.startsWith("Bearer ")) {
 			try {
-				Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(authorization.substring(7))
+				Claims claims = Jwts.parser()
+						.verifyWith(key)
+						.build()
+						.parseSignedClaims(authorization.substring(7))
 						.getPayload();
 
 				Long userId = ((Number) claims.get("userId")).longValue();
 				String email = claims.getSubject();
 
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email,
-						null, List.of());
+				UsernamePasswordAuthenticationToken authentication =
+						new UsernamePasswordAuthenticationToken(email, null, List.of());
+
 				authentication.setDetails(userId);
+
 				SecurityContextHolder.getContext().setAuthentication(authentication);
-			} catch (Exception ignored) {
-				// Spring Security will reject protected requests without authentication.
+
+			} catch (Exception exception) {
+				log.warn("{} - Invalid or expired JWT token for request path: {}, reason: {}", CLASS_NAME, path, exception.getMessage());
 			}
 		}
 
