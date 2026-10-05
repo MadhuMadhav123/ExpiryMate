@@ -11,10 +11,10 @@ services:
             - ./infra/mysql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
         healthcheck:
             test:
-                [
-                    "CMD-SHELL",
-                    "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent",
-                ]
+              [
+                  "CMD-SHELL",
+                  "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent",
+              ]
             interval: 5s
             timeout: 5s
             retries: 30
@@ -44,6 +44,10 @@ services:
         build:
             context: ./eureka-server
         container_name: expirymate-eureka
+        environment:
+            LOG_FILE: /app/logs/eureka-server.log
+        volumes:
+            - ./logs/eureka:/app/logs
         ports:
             - "8761:8761"
         restart: unless-stopped
@@ -58,7 +62,7 @@ services:
             DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root@9966}
             DOCUMENT_SERVICE_URL: http://DOCUMENT-SERVICE
             EUREKA_URL: http://eureka-server:8761/eureka/
-            EUREKA_HOSTNAME: auth-service
+            EUREKA_HOSTNAME: notification-service
             EUREKA_PREFER_IP: "false"
             MAIL_HOST: ${MAIL_HOST:-mailpit}
             MAIL_PORT: ${MAIL_PORT:-1025}
@@ -68,11 +72,15 @@ services:
             MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
             MAIL_FROM: ${MAIL_FROM:-reminders@expirymate.local}
             REMINDER_SCAN_DELAY_MS: ${REMINDER_SCAN_DELAY_MS:-60000}
+            LOG_FILE: /app/logs/notification-service.log
 
             SPRING_RABBITMQ_HOST: rabbitmq
             SPRING_RABBITMQ_PORT: 5672
             SPRING_RABBITMQ_USERNAME: guest
             SPRING_RABBITMQ_PASSWORD: guest
+
+        volumes:
+            - ./logs/notification:/app/logs
 
         depends_on:
             mysql:
@@ -101,11 +109,15 @@ services:
             EUREKA_HOSTNAME: auth-service
             EUREKA_PREFER_IP: "false"
             NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
+            LOG_FILE: /app/logs/auth-service.log
 
             SPRING_RABBITMQ_HOST: rabbitmq
             SPRING_RABBITMQ_PORT: 5672
             SPRING_RABBITMQ_USERNAME: guest
             SPRING_RABBITMQ_PASSWORD: guest
+
+        volumes:
+            - ./logs/auth:/app/logs
 
         depends_on:
             mysql:
@@ -135,6 +147,7 @@ services:
             EUREKA_PREFER_IP: "false"
             NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
             DOCUMENT_STORAGE_PATH: /data/documents
+            LOG_FILE: /app/logs/document-service.log
 
             SPRING_RABBITMQ_HOST: rabbitmq
             SPRING_RABBITMQ_PORT: 5672
@@ -143,6 +156,7 @@ services:
 
         volumes:
             - document_files:/data/documents
+            - ./logs/document:/app/logs
 
         depends_on:
             mysql:
@@ -164,6 +178,10 @@ services:
         container_name: expirymate-gateway
         environment:
             EUREKA_URL: http://eureka-server:8761/eureka/
+            LOG_FILE: /app/logs/api-gateway.log
+
+        volumes:
+            - ./logs/gateway:/app/logs
 
         depends_on:
             eureka-server:

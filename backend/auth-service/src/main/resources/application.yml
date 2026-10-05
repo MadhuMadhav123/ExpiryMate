@@ -41,3 +41,11 @@ eureka:
   instance:
     prefer-ip-address: ${EUREKA_PREFER_IP:false}
     hostname: ${EUREKA_HOSTNAME:localhost}
+
+logging:
+  file:
+    name: ${LOG_FILE:logs/auth-service.log}
+
+  level:
+    root: INFO
+    com.expirymate.auth: INFO

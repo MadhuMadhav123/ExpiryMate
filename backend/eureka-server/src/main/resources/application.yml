@@ -17,3 +17,12 @@ management:
     web:
       exposure:
         include: health,info
+
+logging:
+  file:
+    name: ${LOG_FILE:logs/eureka-server.log}
+
+  level:
+    root: INFO
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
