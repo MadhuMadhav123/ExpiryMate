@@ -1,0 +1,44 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/home/ec2-user/ExpiryMate/backend/logs/gateway/api-gateway.log",
+            "log_group_name": "/expirymate/api-gateway",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/home/ec2-user/ExpiryMate/backend/logs/auth/auth-service.log",
+            "log_group_name": "/expirymate/auth-service",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/home/ec2-user/ExpiryMate/backend/logs/document/document-service.log",
+            "log_group_name": "/expirymate/document-service",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/home/ec2-user/ExpiryMate/backend/logs/notification/notification-service.log",
+            "log_group_name": "/expirymate/notification-service",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/home/ec2-user/ExpiryMate/backend/logs/eureka/eureka-server.log",
+            "log_group_name": "/expirymate/eureka-server",
+            "log_stream_name": "{instance_id}",
+            "timezone": "UTC"
+          }
+        ]
+      }
+    }
+  }
+}

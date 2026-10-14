@@ -1,0 +1,25 @@
+# Environment variables / secrets
+.env
+.env.aws
+
+# Application logs
+logs/
+*.log
+
+# Uploaded files
+uploads/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Maven build output
+target/
+**/target/
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.swp
