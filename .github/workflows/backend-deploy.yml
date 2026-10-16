@@ -1,0 +1,27 @@
+name: Backend Deploy
+
+on:
+  push:
+    branches:
+      - aws_deploy
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-deploy.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Connected to ExpiryMate EC2"
+            hostname
+            whoami
+            docker --version
+            docker compose version
