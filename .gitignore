@@ -1,0 +1,46 @@
+# Environment variables / secrets
+.env
+.env.aws
+.env.production
+**/.env
+**/.env.aws
+**/.env.production
+
+# Application logs
+logs/
+**/logs/
+*.log
+
+# Uploaded files
+uploads/
+**/uploads/
+
+# Node / frontend dependencies
+node_modules/
+**/node_modules/
+
+# Frontend build output
+dist/
+**/dist/
+
+# IntelliJ IDEA
+.idea/
+**/.idea/
+*.iml
+
+# Maven build output
+target/
+**/target/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# VS Code
+.vscode/
+**/.vscode/
+
+# Temporary files
+*.tmp
+*.swp
+*~
