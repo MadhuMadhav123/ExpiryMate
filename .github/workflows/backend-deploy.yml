@@ -1,3 +1,4 @@
+
 name: Backend Deploy
 
 on:
@@ -13,15 +14,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Connect to EC2
+      - name: Deploy backend to EC2
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "Connected to ExpiryMate EC2"
-            hostname
-            whoami
-            docker --version
-            docker compose version
+            set -e
+
+            cd /home/ec2-user/ExpiryMate
+
+            git checkout aws_deploy
+            git pull origin aws_deploy
+
+            cd backend
+
+            docker compose \
+              --env-file .env.aws \
+              -f docker-compose.aws.yml \
+              up -d --build
+
+            docker compose \
+              --env-file .env.aws \
+              -f docker-compose.aws.yml \
+              ps
