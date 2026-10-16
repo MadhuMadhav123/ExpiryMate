@@ -84,8 +84,7 @@ public class AuthController {
 
 		String email = normalizeEmail(request.email());
 
-		//log.info("{} - Login API triggered for email: {}", CLASS_NAME,email);
-		log.info("{} CI/CD TEST -  Login API triggered for email: {}", CLASS_NAME,email);
+		log.info("{} - Login API triggered for email: {}", CLASS_NAME,email);
 
 		return userRepository.findByEmailIgnoreCase(email)
 				.filter(user -> passwordEncoder.matches(
@@ -93,13 +92,11 @@ public class AuthController {
 						user.getPassword()
 				))
 				.<ResponseEntity<?>>map(user -> {
-					//log.info("{} - Login successful for userId: {}, email: {}",CLASS_NAME,user.getId(),user.getEmail());
-					log.info("{} CI/CD TEST - Login successful for userId: {}, email: {}",CLASS_NAME,user.getId(),user.getEmail());
+					log.info("{} - Login successful for userId: {}, email: {}",CLASS_NAME,user.getId(),user.getEmail());
 					return ResponseEntity.ok(toAuthResponse(user));
 				})
 				.orElseGet(() -> {
-					//log.warn("{} - Login failed for email: {}",CLASS_NAME,email);
-					log.warn("{} CI/CD TEST - Login failed for email: {}",CLASS_NAME,email);
+					log.warn("{} - Login failed for email: {}",CLASS_NAME,email);
 					return ResponseEntity
 							.status(HttpStatus.UNAUTHORIZED)
 							.body(Map.of("message","Invalid email or password"));
