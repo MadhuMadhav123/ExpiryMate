@@ -498,8 +498,8 @@ function Dashboard({ onLogout, onAuthenticated }) {
             <>
               <div className="page-heading">
                 <div>
-                  <h1>Dashboard CI/CD</h1>
-                  <p>Welcome back, {user.name || 'User'}! 👋</p>
+                  <h1>Dashboard CI?CD</h1>
+                  <p>Welcome back CI/CD, {user.name || 'User'}! 👋</p>
                 </div>
                 <div className="today-label">
                   {new Intl.DateTimeFormat('en-US', {
