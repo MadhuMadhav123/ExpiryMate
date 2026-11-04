@@ -147,7 +147,7 @@ services:
       LOG_FILE: /app/logs/document-service.log
 
     volumes:
-      - document_files:/data/documents
+      #- document_files:/data/documents
       - ./logs/document:/app/logs
 
     depends_on:
@@ -187,5 +187,5 @@ services:
 
     restart: unless-stopped
 
-volumes:
-  document_files:
+#volumes:
+#  document_files:

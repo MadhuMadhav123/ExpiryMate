@@ -38,9 +38,9 @@ jwt:
 notification-service:
   url: ${NOTIFICATION_SERVICE_URL:http://NOTIFICATION-SERVICE}
 
-app:
-  storage:
-    path: ${DOCUMENT_STORAGE_PATH:uploads}
+#app:
+#  storage:
+#    path: ${DOCUMENT_STORAGE_PATH:uploads}
 
 aws:
   region: ${AWS_REGION:us-east-2}
