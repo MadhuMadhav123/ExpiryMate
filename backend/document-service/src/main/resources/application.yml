@@ -42,6 +42,11 @@ app:
   storage:
     path: ${DOCUMENT_STORAGE_PATH:uploads}
 
+aws:
+  region: ${AWS_REGION:us-east-2}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET:expirymate-documents-2026}
+
 eureka:
   client:
     service-url:
