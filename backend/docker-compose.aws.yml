@@ -1,25 +1,23 @@
 services:
 
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: expirymate-mailpit
-    ports:
-      - "8025:8025"
-    restart: unless-stopped
-
   rabbitmq:
     image: rabbitmq:3-management
     container_name: expirymate-rabbitmq
+
     ports:
       - "15672:15672"
+
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
     restart: unless-stopped
+
 
   eureka-server:
     build:
       context: ./eureka-server
+
     container_name: expirymate-eureka
 
     environment:
@@ -33,9 +31,11 @@ services:
 
     restart: unless-stopped
 
+
   notification-service:
     build:
       context: ./notification-service
+
     container_name: expirymate-notification
 
     environment:
@@ -49,13 +49,16 @@ services:
       EUREKA_HOSTNAME: notification-service
       EUREKA_PREFER_IP: "false"
 
-      MAIL_HOST: ${MAIL_HOST:-mailpit}
-      MAIL_PORT: ${MAIL_PORT:-1025}
-      MAIL_USERNAME: ${MAIL_USERNAME:-}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
-      MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
-      MAIL_FROM: ${MAIL_FROM:-reminders@expirymate.local}
+      # Amazon SES SMTP
+      MAIL_HOST: ${SES_SMTP_HOST}
+      MAIL_PORT: ${SES_SMTP_PORT}
+      MAIL_USERNAME: ${SES_SMTP_USERNAME}
+      MAIL_PASSWORD: ${SES_SMTP_PASSWORD}
+      MAIL_FROM: ${SES_FROM_EMAIL}
+
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH}
+      MAIL_STARTTLS_ENABLE: ${MAIL_STARTTLS_ENABLE}
+      MAIL_STARTTLS_REQUIRED: ${MAIL_STARTTLS_REQUIRED}
 
       REMINDER_SCAN_DELAY_MS: ${REMINDER_SCAN_DELAY_MS:-60000}
 
@@ -72,16 +75,17 @@ services:
     depends_on:
       eureka-server:
         condition: service_started
+
       rabbitmq:
-        condition: service_started
-      mailpit:
         condition: service_started
 
     restart: unless-stopped
 
+
   auth-service:
     build:
       context: ./auth-service
+
     container_name: expirymate-auth
 
     environment:
@@ -110,16 +114,20 @@ services:
     depends_on:
       eureka-server:
         condition: service_started
+
       rabbitmq:
         condition: service_started
+
       notification-service:
         condition: service_started
 
     restart: unless-stopped
 
+
   document-service:
     build:
       context: ./document-service
+
     container_name: expirymate-document
 
     environment:
@@ -135,7 +143,7 @@ services:
 
       NOTIFICATION_SERVICE_URL: http://NOTIFICATION-SERVICE
 
-      DOCUMENT_STORAGE_PATH: /data/documents
+      # Amazon S3
       AWS_REGION: ${AWS_REGION}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
 
@@ -147,22 +155,25 @@ services:
       LOG_FILE: /app/logs/document-service.log
 
     volumes:
-      #- document_files:/data/documents
       - ./logs/document:/app/logs
 
     depends_on:
       eureka-server:
         condition: service_started
+
       rabbitmq:
         condition: service_started
+
       notification-service:
         condition: service_started
 
     restart: unless-stopped
 
+
   api-gateway:
     build:
       context: ./api-gateway
+
     container_name: expirymate-gateway
 
     environment:
@@ -175,10 +186,13 @@ services:
     depends_on:
       eureka-server:
         condition: service_started
+
       auth-service:
         condition: service_started
+
       document-service:
         condition: service_started
+
       notification-service:
         condition: service_started
 
@@ -186,6 +200,3 @@ services:
       - "8080:8080"
 
     restart: unless-stopped
-
-#volumes:
-#  document_files:

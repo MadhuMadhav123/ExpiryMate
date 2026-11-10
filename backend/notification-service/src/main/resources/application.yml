@@ -20,12 +20,16 @@ spring:
     port: ${MAIL_PORT:1025}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
+
     properties:
       mail:
         smtp:
           auth: ${MAIL_SMTP_AUTH:false}
+
           starttls:
-            enable: ${MAIL_STARTTLS:false}
+            enable: ${MAIL_STARTTLS_ENABLE:false}
+            required: ${MAIL_STARTTLS_REQUIRED:false}
+
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
@@ -39,6 +43,7 @@ spring:
 springdoc:
   swagger-ui:
     enabled: false
+
   api-docs:
     enabled: true
 
