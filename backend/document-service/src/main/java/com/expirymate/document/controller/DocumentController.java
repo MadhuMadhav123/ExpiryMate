@@ -84,11 +84,11 @@ public class DocumentController {
 
 		log.info("{} - Document created successfully for documentId: {}, name: {}, userId: {}", CLASS_NAME, saved.getId(), saved.getName(), userId);
 
-		if (LocalDate.now().equals(saved.getExpiryDate())) {
+		/*if (LocalDate.now().equals(saved.getExpiryDate())) {
 			log.info("{} - Document expires today. Triggering immediate reminder for documentId: {}", CLASS_NAME, saved.getId());
 			notificationClient.sendImmediateExpiryReminder(saved);
-		}
-
+		}*/
+		triggerImmediateExpiryReminderIfNeeded(saved);
 		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
 
@@ -106,6 +106,9 @@ public class DocumentController {
 			}
 
 			normalize(incoming);
+
+			LocalDate previousExpiryDate = existing.getExpiryDate();
+
 			existing.setName(incoming.getName());
 			existing.setCategory(incoming.getCategory());
 			existing.setDocumentNumber(incoming.getDocumentNumber());
@@ -115,7 +118,17 @@ public class DocumentController {
 
 			Document saved = repository.save(existing);
 
-			log.info("{} - Update document successful for documentId: {}, name: {}, userId: {}", CLASS_NAME, saved.getId(), saved.getName(), userId);
+			log.info(
+					"{} - Update document successful for documentId: {}, name: {}, userId: {}",
+					CLASS_NAME,
+					saved.getId(),
+					saved.getName(),
+					userId
+			);
+
+			if (!saved.getExpiryDate().equals(previousExpiryDate)) {
+				triggerImmediateExpiryReminderIfNeeded(saved);
+			}
 			return ResponseEntity.ok(saved);
 
 		}).orElseGet(() -> {
@@ -284,6 +297,24 @@ public class DocumentController {
 
 	private Long userId(Authentication authentication) {
 		return (Long) authentication.getDetails();
+	}
+
+	private void triggerImmediateExpiryReminderIfNeeded(Document document) {
+
+		LocalDate today = LocalDate.now();
+
+		if (document.getExpiryDate() != null &&
+				!document.getExpiryDate().isAfter(today)) {
+
+			log.info(
+					"{} - Document is expired or expires today. Triggering immediate reminder for documentId: {}, expiryDate: {}",
+					CLASS_NAME,
+					document.getId(),
+					document.getExpiryDate()
+			);
+
+			notificationClient.sendImmediateExpiryReminder(document);
+		}
 	}
 
 	private String validateDocument(Document document, Long userId, Long editingId) {
